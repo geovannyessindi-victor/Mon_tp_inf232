@@ -1,367 +1,228 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DataSanté CM — Collecte & Analyse</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataSanté CM — Collecte & Analyse</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2235; --card: #151e2d; --card2: #1c2840;
+    --border: rgba(99,179,237,0.15); --border2: rgba(99,179,237,0.3);
+    --accent: #38bdf8; --accent2: #0ea5e9; --green: #34d399; --red: #f87171;
+    --amber: #fbbf24; --purple: #a78bfa; --text: #e2e8f0; --text2: #94a3b8;
+    --text3: #64748b; --font: 'Sora', sans-serif; --mono: 'JetBrains Mono', monospace;
+    --radius: 12px; --radius2: 8px;
+  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
 
-    <style>
-        /* CONFIGURATION DES COULEURS (Look Professionnel) */
-        :root {
-            --fond-ecran: #020617; /* Noir de jais */
-            --degrade: linear-gradient(145deg, #020617 0%, #0f172a 100%);
-            --couleur-carte: #1e293b;
-            --bleu-accent: #38bdf8;
-            --texte-blanc: #f8fafc;
-            --texte-gris: #94a3b8;
-            --bordure: rgba(255, 255, 255, 0.08);
-            --vert-succes: #10b981;
-        }
+  /* HEADER & NAV */
+  .header { background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-bottom: 1px solid var(--border2); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 64px; position: sticky; top: 0; z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--purple)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo-text { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.5px; }
+  .logo-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; overflow-x: auto; }
+  .nav-btn { padding: 14px 20px; font-size: 13px; font-weight: 500; color: var(--text3); background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* LAYOUT */
+  .main { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+  .page { display: none; }
+  .page.active { display: block; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem; }
+  
+  /* STATS & CHARTS */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--card2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; border-top: 3px solid var(--accent); }
+  .stat-value { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 1.5rem; }
+  .chart-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
 
-        body {
-            font-family: 'Sora', sans-serif;
-            background: var(--fond-ecran);
-            background: var(--degrade);
-            background-attachment: fixed;
-            color: var(--texte-blanc);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+  /* FORM & TABLE */
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .form-input, .form-select { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 8px; color: white; }
+  table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 13px; }
+  th { text-align: left; padding: 10px; background: var(--bg3); color: var(--text3); }
+  td { padding: 10px; border-bottom: 1px solid var(--border); }
+  
+  .btn { padding: 10px 20px; border-radius: 6px; cursor: pointer; border: none; font-weight: 600; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .status-pill { padding: 2px 8px; border-radius: 12px; font-size: 11px; }
 
-        /* EN-TETE */
-        header {
-            background: rgba(15, 23, 42, 0.9);
-            padding: 20px 50px;
-            border-bottom: 1px solid var(--bordure);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .titre-logo { font-size: 22px; font-weight: 700; color: var(--bleu-accent); }
-
-        /* NAVIGATION PAR ONGLETS */
-        nav {
-            display: flex;
-            background: rgba(30, 41, 59, 0.4);
-            border-bottom: 1px solid var(--bordure);
-            padding: 0 50px;
-        }
-
-        .onglet {
-            padding: 18px 25px;
-            color: var(--texte-gris);
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            border-bottom: 3px solid transparent;
-            transition: 0.3s;
-        }
-
-        .onglet.actif {
-            color: var(--bleu-accent);
-            border-bottom-color: var(--bleu-accent);
-        }
-
-        /* MISE EN PAGE PRINCIPALE */
-        .contenu { padding: 40px; max-width: 1400px; margin: 0 auto; }
-        .section { display: none; }
-        .section.active { display: block; }
-
-        /* CARTES DE STATISTIQUES */
-        .grille-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-
-        .carte-stat {
-            background: var(--couleur-carte);
-            padding: 25px;
-            border-radius: 16px;
-            border: 1px solid var(--bordure);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .carte-stat span { font-size: 12px; color: var(--texte-gris); text-transform: uppercase; }
-        .carte-stat div { font-size: 32px; font-weight: 700; color: var(--bleu-accent); margin-top: 10px; }
-
-        /* FORMULAIRE DE COLLECTE */
-        .boite-formulaire {
-            background: var(--couleur-carte);
-            padding: 40px;
-            border-radius: 20px;
-            border: 1px solid var(--bordure);
-        }
-
-        .grille-champs {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-        }
-
-        .champ-groupe { display: flex; flex-direction: column; gap: 8px; }
-        .champ-groupe label { font-size: 13px; font-weight: 500; color: var(--texte-gris); }
-        
-        input, select {
-            background: #0f172a;
-            border: 1px solid var(--bordure);
-            padding: 14px;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 15px;
-            outline: none;
-        }
-
-        input:focus { border-color: var(--bleu-accent); }
-
-        .bouton-save {
-            background: var(--bleu-accent);
-            color: #020617;
-            padding: 18px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 30px;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-
-        .bouton-save:hover { background: #7dd3fc; transform: translateY(-2px); }
-
-        /* TABLEAU DES DONNÉES */
-        .zone-tableau {
-            background: var(--couleur-carte);
-            border-radius: 16px;
-            padding: 25px;
-            overflow-x: auto;
-        }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; color: var(--texte-gris); font-size: 12px; border-bottom: 1px solid var(--bordure); }
-        td { padding: 15px; border-bottom: 1px solid var(--bordure); font-size: 14px; }
-
-        /* GRAPHIQUES */
-        .ligne-graphiques {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 30px;
-            margin-top: 30px;
-        }
-    </style>
+  /* TOAST */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--green); color: black; padding: 10px 20px; border-radius: 8px; opacity: 0; transition: 0.3s; }
+  .toast.show { opacity: 1; }
+</style>
 </head>
 <body>
 
-<header>
-    <div class="titre-logo">🏥 DataSanté Cameroon</div>
-    <div style="font-size: 13px; color: var(--vert-succes)">● Base de données Serveur Connectée</div>
-</header>
-
-<nav>
-    <div class="onglet actif" onclick="gererOnglets('analyse', this)">📊 Analytique Descriptive</div>
-    <div class="onglet" onclick="gererOnglets('collecte', this)">➕ Nouvelle Collecte</div>
-    <div class="onglet" onclick="gererOnglets('base', this)">📋 Base Patients</div>
-</nav>
-
-<div class="contenu">
-
-    <div id="analyse" class="section active">
-        <div class="grille-stats">
-            <div class="carte-stat"><span>Patients Totaux</span><div id="count-total">0</div></div>
-            <div class="carte-stat"><span>Indice IMC Moyen</span><div id="moyenne-imc">0.0</div></div>
-            <div class="carte-stat"><span>Région Principale</span><div id="top-reg">-</div></div>
-        </div>
-
-        <div class="ligne-graphiques">
-            <div class="boite-formulaire">
-                <h3>Répartition Géographique</h3>
-                <canvas id="chartRegions" style="margin-top:20px;"></canvas>
-            </div>
-            <div class="boite-formulaire">
-                <h3>Tendances de Santé</h3>
-                <canvas id="chartSante" style="margin-top:20px;"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div id="collecte" class="section">
-        <div class="boite-formulaire">
-            <h2 style="margin-bottom: 30px;">Enregistrement d'un nouveau patient</h2>
-            <div class="grille-champs">
-                <div class="champ-groupe"><label>Nom Complet</label><input type="text" id="p_nom"></div>
-                <div class="champ-groupe"><label>Âge</label><input type="number" id="p_age"></div>
-                <div class="champ-groupe">
-                    <label>Genre</label>
-                    <select id="p_sexe">
-                        <option value="M">Masculin</option>
-                        <option value="F">Féminin</option>
-                    </select>
-                </div>
-                <div class="champ-groupe">
-                    <label>Région du Cameroun</label>
-                    <select id="p_region">
-                        <option value="Centre">Centre</option>
-                        <option value="Littoral">Littoral</option>
-                        <option value="Ouest">Ouest</option>
-                        <option value="Est">Est</option>
-                        <option value="Sud">Sud</option>
-                        <option value="Adamaoua">Adamaoua</option>
-                        <option value="Nord">Nord</option>
-                        <option value="Extrême-Nord">Extrême-Nord</option>
-                        <option value="Nord-Ouest">Nord-Ouest</option>
-                        <option value="Sud-Ouest">Sud-Ouest</option>
-                    </select>
-                </div>
-                <div class="champ-groupe"><label>Poids (kg)</label><input type="number" id="p_poids" step="0.1"></div>
-                <div class="champ-groupe"><label>Taille (cm)</label><input type="number" id="p_taille"></div>
-            </div>
-            <button class="bouton-save" onclick="validerEtEnvoyer()">💾 Sauvegarder dans la base Python</button>
-        </div>
-    </div>
-
-    <div id="base" class="section">
-        <div class="zone-tableau">
-            <h3 style="margin-bottom:20px;">Historique des collectes enregistrées</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date d'entrée</th>
-                        <th>Nom du Patient</th>
-                        <th>Région</th>
-                        <th>Âge</th>
-                        <th>IMC</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="corps-tableau">
-                    </tbody>
-            </table>
-        </div>
-    </div>
-
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">🏥</div>
+    <div><div class="logo-text">DataSanté CM</div><div class="logo-sub">INF 232 - Collecte</div></div>
+  </div>
+  <div class="badge" id="rec-count" style="color:var(--accent)">0 enreg.</div>
 </div>
 
+<nav class="nav">
+  <button class="nav-btn active" onclick="goto('accueil')">📊 Tableau de bord</button>
+  <button class="nav-btn" onclick="goto('collecte')">➕ Collecte</button>
+  <button class="nav-btn" onclick="goto('donnees')">📋 Données</button>
+  <button class="nav-btn" onclick="goto('analyse')">🔬 Analyse</button>
+  <button class="nav-btn" onclick="goto('export')">📤 Export</button>
+</nav>
+
+<div class="main">
+  <div class="page active" id="page-accueil">
+    <div class="stats-grid">
+      <div class="stat-card"><div>Patients</div><div class="stat-value" id="s-total">0</div></div>
+      <div class="stat-card"><div>Âge moyen</div><div class="stat-value" id="s-age">—</div></div>
+      <div class="stat-card"><div>IMC moyen</div><div class="stat-value" id="s-imc">—</div></div>
+    </div>
+    <div class="charts-grid">
+      <div class="chart-box"><canvas id="chart-sexe"></canvas></div>
+      <div class="chart-box"><canvas id="chart-age"></canvas></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-collecte">
+    <div class="card">
+      <h3>Nouveau Patient</h3>
+      <div class="form-grid">
+        <div class="form-group"><label>Prénom</label><input type="text" id="f-prenom" class="form-input"></div>
+        <div class="form-group"><label>Nom</label><input type="text" id="f-nom" class="form-input"></div>
+        <div class="form-group"><label>Âge</label><input type="number" id="f-age" class="form-input"></div>
+        <div class="form-group"><label>Sexe</label><select id="f-sexe" class="form-select"><option value="M">Masculin</option><option value="F">Féminin</option></select></div>
+        <div class="form-group"><label>Poids (kg)</label><input type="number" id="f-poids" class="form-input" oninput="calcIMC()"></div>
+        <div class="form-group"><label>Taille (cm)</label><input type="number" id="f-taille" class="form-input" oninput="calcIMC()"></div>
+        <div class="form-group"><label>Maladie</label><select id="f-maladie" class="form-select"><option>Aucune</option><option>Hypertension</option><option>Diabète</option></select></div>
+      </div>
+      <button class="btn btn-primary" onclick="submitForm()">Enregistrer</button>
+    </div>
+  </div>
+
+  <div class="page" id="page-donnees">
+    <div class="card">
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>ID</th><th>Nom</th><th>Âge</th><th>Sexe</th><th>IMC</th><th>Maladie</th><th>Action</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-analyse">
+    <div class="card">
+      <h3>Statistiques Descriptives</h3>
+      <div id="desc-stats" style="display:flex; gap:20px; margin-top:15px;"></div>
+      <div class="charts-grid" style="margin-top:20px;">
+        <div class="chart-box"><canvas id="chart-imc-dist"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-export">
+    <div class="card" style="text-align:center">
+      <h3>Exporter les données</h3>
+      <button class="btn btn-primary" onclick="exportCSV()">Télécharger CSV</button>
+      <button class="btn btn-primary" onclick="exportJSON()" style="margin-left:10px">Télécharger JSON</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Opération réussie !</div>
+
 <script>
-    let graphRegion = null;
+  let db = JSON.parse(localStorage.getItem('datasante_db') || '[]');
+  let charts = {};
 
-    // FONCTION : GESTION DES ONGLETS
-    function gererOnglets(idSection, bouton) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.onglet').forEach(o => o.classList.remove('actif'));
-        
-        document.getElementById(idSection).classList.add('active');
-        bouton.classList.add('actif');
+  function goto(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    event.target.classList.add('active');
+    if(page==='accueil') renderCharts();
+    if(page==='donnees') renderTable();
+    if(page==='analyse') renderAnalyse();
+  }
 
-        if(idSection !== 'collecte') rafraichirDonnees();
+  function submitForm() {
+    const record = {
+      id: 'PAT-' + Date.now().toString().slice(-4),
+      prenom: document.getElementById('f-prenom').value,
+      nom: document.getElementById('f-nom').value,
+      age: parseInt(document.getElementById('f-age').value),
+      sexe: document.getElementById('f-sexe').value,
+      poids: parseFloat(document.getElementById('f-poids').value),
+      taille: parseFloat(document.getElementById('f-taille').value),
+      maladie: document.getElementById('f-maladie').value,
+      imc: (parseFloat(document.getElementById('f-poids').value) / ((parseFloat(document.getElementById('f-taille').value)/100)**2)).toFixed(1)
+    };
+    db.push(record);
+    localStorage.setItem('datasante_db', JSON.stringify(db));
+    showToast("Patient enregistré !");
+    updateGlobalStats();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = db.map(r => `
+      <tr>
+        <td>${r.id}</td><td>${r.prenom} ${r.nom}</td><td>${r.age}</td>
+        <td>${r.sexe}</td><td>${r.imc}</td><td>${r.maladie}</td>
+        <td><button onclick="deleteRec('${r.id}')" style="color:red; background:none; border:none; cursor:pointer">Suppr.</button></td>
+      </tr>`).join('');
+  }
+
+  function deleteRec(id) {
+    db = db.filter(r => r.id !== id);
+    localStorage.setItem('datasante_db', JSON.stringify(db));
+    renderTable();
+    updateGlobalStats();
+  }
+
+  function updateGlobalStats() {
+    document.getElementById('rec-count').textContent = db.length + ' enreg.';
+    document.getElementById('s-total').textContent = db.length;
+    if(db.length > 0) {
+      const avgAge = db.reduce((a, b) => a + b.age, 0) / db.length;
+      const avgImc = db.reduce((a, b) => a + parseFloat(b.imc), 0) / db.length;
+      document.getElementById('s-age').textContent = avgAge.toFixed(1) + " ans";
+      document.getElementById('s-imc').textContent = avgImc.toFixed(1);
     }
+  }
 
-    // FONCTION : ENVOI DES DONNÉES AU SERVEUR PYTHON
-    function validerEtEnvoyer() {
-        const poids = parseFloat(document.getElementById('p_poids').value);
-        const taille = parseFloat(document.getElementById('p_taille').value);
-        
-        // Calcul manuel de l'IMC
-        const imc = (poids / ((taille/100) * (taille/100))).toFixed(1);
+  function renderCharts() {
+    if(charts.sexe) charts.sexe.destroy();
+    const m = db.filter(r=>r.sexe==='M').length;
+    const f = db.filter(r=>r.sexe==='F').length;
+    charts.sexe = new Chart(document.getElementById('chart-sexe'), {
+      type:'pie', data: { labels:['H','F'], datasets:[{data:[m,f], backgroundColor:['#38bdf8','#a78bfa']}] }
+    });
+  }
 
-        const dataPatient = {
-            nom: document.getElementById('p_nom').value,
-            age: document.getElementById('p_age').value,
-            sexe: document.getElementById('p_sexe').value,
-            region: document.getElementById('p_region').value,
-            poids: poids,
-            taille: taille,
-            imc: imc,
-            date: new Date().toLocaleDateString('fr-FR')
-        };
+  function exportCSV() {
+    let csv = "ID,Nom,Age,Sexe,IMC,Maladie\n";
+    db.forEach(r => csv += `${r.id},${r.nom},${r.age},${r.sexe},${r.imc},${r.maladie}\n`);
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'export_sante.csv';
+    a.click();
+  }
 
-        if(!dataPatient.nom || isNaN(poids)) {
-            alert("Veuillez remplir les champs obligatoires !");
-            return;
-        }
+  function showToast(m) {
+    const t = document.getElementById('toast');
+    t.textContent = m; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 2000);
+  }
 
-        fetch('/enregistrer', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataPatient)
-        })
-        .then(res => res.json())
-        .then(() => {
-            alert("Données enregistrées dans data.json !");
-            viderForm();
-            rafraichirDonnees();
-        })
-        .catch(err => alert("Erreur : Le serveur Python est-il lancé ?"));
-    }
-
-    // FONCTION : RÉCUPÉRATION ET ANALYSE
-    function rafraichirDonnees() {
-        fetch('/statistiques')
-        .then(res => res.json())
-        .then(data => {
-            // Mise à jour des chiffres en haut
-            document.getElementById('count-total').innerText = data.total;
-            document.getElementById('moyenne-imc').innerText = data.imc_moyen;
-
-            // Remplissage du tableau
-            const table = document.getElementById('corps-tableau');
-            table.innerHTML = '';
-            data.liste.forEach(item => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${item.date}</td>
-                        <td>${item.nom}</td>
-                        <td>${item.region}</td>
-                        <td>${item.age} ans</td>
-                        <td style="color:var(--bleu-accent); font-weight:700;">${item.imc}</td>
-                        <td style="color:var(--vert-succes)">Vérifié</td>
-                    </tr>
-                `;
-            });
-
-            // Mise à jour du graphique circulaire
-            genererGraphique(data.regions);
-        });
-    }
-
-    function genererGraphique(regionsStats) {
-        const ctx = document.getElementById('chartRegions').getContext('2d');
-        if(graphRegion) graphRegion.destroy();
-        
-        graphRegion = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(regionsStats),
-                datasets: [{
-                    data: Object.values(regionsStats),
-                    backgroundColor: ['#38bdf8', '#10b981', '#fbbf24', '#f87171', '#a78bfa', '#ec4899']
-                }]
-            },
-            options: {
-                plugins: {
-                    legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Sora' } } }
-                }
-            }
-        });
-    }
-
-    function viderForm() {
-        document.querySelectorAll('input').forEach(i => i.value = '');
-    }
-
-    // Démarrage automatique
-    window.onload = rafraichirDonnees;
+  window.onload = updateGlobalStats;
 </script>
-
 </body>
 </html>
