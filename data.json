@@ -1,0 +1,38 @@
+[
+    {
+        "nom": "ESSINDI",
+        "prenom": "VICTOR",
+        "poids": 63,
+        "taille": 168,
+        "region": "Centre",
+        "imc": "22.3"
+    },
+    {
+        "nom": "MAMBE ",
+        "prenom": "INES",
+        "poids": 70,
+        "taille": 165,
+        "region": "Centre",
+        "imc": "25.7"
+    },
+    {
+        "prenom": "GEOVANNY",
+        "nom": "ESSINDI",
+        "age": "24",
+        "poids": 64,
+        "taille": 172,
+        "region": "Centre",
+        "imc": "21.6",
+        "date": "16/04/2026"
+    },
+    {
+        "nom": "DONKENG",
+        "age": "15",
+        "sexe": "F",
+        "region": "Littoral",
+        "poids": 67,
+        "taille": 143,
+        "imc": "32.8",
+        "date": "16/04/2026"
+    }
+]
